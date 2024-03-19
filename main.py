@@ -81,8 +81,8 @@ def get_response(user_question):
     return response
 
 def main():
-    st.title("Aceify - An Exam Bot")
-    st.write("Welcome to Aceify! I'm your friendly exam assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content and Let's ace those exams!")
+    st.title("Aceify")
+    st.write("Welcome to Aceify ! I'm your friendly files assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content and Let's ace those exams!")
 
     uploaded_file = st.file_uploader("Upload your study materials (PDF, Word, PowerPoint, or spreadsheet)", type=["pdf", "docx", "pptx", "csv", "xls", "xlsx"])
 
