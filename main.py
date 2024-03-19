@@ -17,7 +17,7 @@ import pandas as pd
 load_dotenv()
 os.getenv("GOOGLE_API_KEY")
 gen_ai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-st.set_page_config(page_title="Aceify - An Exam Bot", page_icon=":book:")
+st.set_page_config(page_title="Aceify", page_icon=":book:")
 
 if "vector_store" not in st.session_state:
     st.session_state.vector_store = None
@@ -81,8 +81,8 @@ def get_response(user_question):
     return response
 
 def main():
-    st.title("Aceify")
-    st.write("Welcome to Aceify ! I'm your friendly files assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content and Let's ace those exams!")
+    st.title("Aceify Bot")
+    st.write("Welcome to Aceify ! I'm your friendly files assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content")
 
     uploaded_file = st.file_uploader("Upload your study materials (PDF, Word, PowerPoint, or spreadsheet)", type=["pdf", "docx", "pptx", "csv", "xls", "xlsx"])
 
