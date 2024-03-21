@@ -1,6 +1,6 @@
 # Aceify 🚀
 
-Welcome to Aceify, the ultimate tool for extracting insights and answering queries from your research documents like PDFs, PPTs, and CSV files! 📚💡
+Welcome to Aceify, the ultimate tool for extracting insights and answering queries from your research documents or syllabus books like PDFs, PPTs, and CSV files! 📚💡
 
 ## Overview
 
