@@ -4,7 +4,7 @@ Welcome to Aceify, the ultimate tool for extracting insights and answering queri
 
 ## Overview
 
-Aceify is a cutting-edge project that leverages state-of-the-art technologies, including the GEMINI PRO model, Langchain, and generative embedding through Langchain, to attain vector embeddings and revolutionize your research process and syllabus preparation. With advanced document processing capabilities, Aceify helps you efficiently extract key information and generate insightful responses to your queries.
+Aceify is a data retrival AI project, including the GEMINI PRO model, Langchain, and generative embedding through Langchain, to attain vector embeddings and to search through research process or syllabus preparation. With advanced document processing capabilities, Aceify helps you efficiently extract key information and generate insightful responses to your queries.
 
 ## Features
 
