@@ -43,8 +43,8 @@ def extract_text_from_file(file_bytes, file_extension):
             for shape in slide.shapes:
                 if hasattr(shape, "text"):
                     text += shape.text + "\n"
-    elif file_extension in [".csv", ".xls", ".xlsx"]:
-        data = pd.read_excel(io.BytesIO(file_bytes), engine="openpyxl")
+    elif file_extension == ".csv":
+        data = pd.read_csv(io.BytesIO(file_bytes))
         text = data.to_string()
     return text
 
@@ -82,9 +82,9 @@ def get_response(user_question):
 
 def main():
     st.title("Aceify Bot")
-    st.write("Welcome to Aceify ! I'm your friendly files assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content")
+    st.write("Welcome to Aceify! I'm your friendly files assistant. Upload your study materials, and I'll process them. Then, you can ask me questions about the content.")
 
-    uploaded_file = st.file_uploader("Upload your study materials (PDF, Word, PowerPoint, or spreadsheet)", type=["pdf", "docx", "pptx", "csv", "xls", "xlsx"])
+    uploaded_file = st.file_uploader("Upload your study materials (PDF, Word, PowerPoint, CSV, or spreadsheet)", type=["pdf", "docx", "pptx", "csv", "xls", "xlsx"])
 
     if uploaded_file is not None:
         file_bytes = uploaded_file.read()
