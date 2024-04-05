@@ -11,3 +11,5 @@ chromadb
 faiss-cpu
 langchain_google_genai
 openpyxl
+Pillow
+pytesseract
