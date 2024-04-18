@@ -20,7 +20,6 @@ from langchain.chains.question_answering import load_qa_chain
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 import asyncio
-import threading
 
 load_dotenv()
 os.getenv("GOOGLE_API_KEY")
@@ -28,7 +27,7 @@ gen_ai.configure(api_key=os.environ['GOOGLE_API_KEY'])
 st.set_page_config(page_title="Aceify", page_icon=":book:")
 
 ADMIN = 5882873021
-USER_IDS = 1111111111,0000000000
+USER_IDS = 1111111111, 0000000000
 
 if "vector_store" not in st.session_state:
     st.session_state.vector_store = None
@@ -186,21 +185,16 @@ async def askque(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     full_response = ''.join(response['output_text'])
     await update.message.reply_text(full_response)
 
-def start_telegram_bot():
+def main():
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
+
     application = ApplicationBuilder().token(os.environ['TELEGRAM_BOT_TOKEN']).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("clear", clear))
     application.add_handler(MessageHandler(filters.Document.ALL, process_file))
     application.add_handler(MessageHandler(filters.PHOTO, process_file))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
-    loop.run_until_complete(application.run_polling())
-
-def main():
-
-    bot_thread = threading.Thread(target=start_telegram_bot)
-    bot_thread.start()
 
     st.title("Aceify")
     st.write("Welcome to Aceify! Upload your syllabus PDFs and ask questions.")
@@ -210,9 +204,8 @@ def main():
 
     if st.button("Clear Conversation"):
         st.session_state.messages.clear()
-    
+
     if uploaded_file is not None:
-        
         file_bytes = uploaded_file.read()
         file_extension = os.path.splitext(uploaded_file.name)[1].lower()
 
@@ -243,6 +236,12 @@ def main():
                     st.write(full_response)
                     message = {"role": "assistant", "content": full_response}
                     st.session_state.messages.append(message)
+
+    async def run_telegram_bot():
+        await application.run_polling()
+
+    loop.create_task(run_telegram_bot())
+    loop.run_forever()
 
 if __name__ == '__main__':
     main()
