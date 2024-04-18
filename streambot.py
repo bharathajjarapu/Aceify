@@ -5,7 +5,6 @@ import PIL
 import docx
 import pptx
 import logging
-import pytesseract
 import subprocess
 import pandas as pd
 import streamlit as st
@@ -44,16 +43,8 @@ def extract_text_from_file(file_bytes, file_extension, ocr=False):
     if file_extension == ".pdf":
         pdf_io = io.BytesIO(file_bytes)
         pdf_reader = PdfReader(pdf_io)
-        if ocr:
-            images = page.images
-            for image in images:
-                image_bytes = image.data
-                image_file = io.BytesIO(image_bytes)
-                image = PIL.Image.open(image_file)
-                text += pytesseract.image_to_string(image) + "\n"
-        else :
-            for page in pdf_reader.pages:
-                text += page.extract_text()
+        for page in pdf_reader.pages:
+            text += page.extract_text()
 
     elif file_extension in [".png", ".jpg", ".jpeg", ".webp"]:
         image_file = io.BytesIO(file_bytes)
@@ -122,6 +113,12 @@ def get_user_response(user_id, user_question):
 
     return response
 
+def get_response(user_question):
+    relevant_docs = st.session_state.vector_store.similarity_search(user_question)
+    conversational_chain = setup_conversational_chain()
+    response = conversational_chain({"input_documents": relevant_docs, "question": user_question}, return_only_outputs=True)
+    return response
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     await update.message.reply_markdown_v2(
@@ -178,11 +175,51 @@ def start_telegram_bot():
     loop.run_until_complete(application.run_polling())
 
 def main():
-    st.title("Aceify")
-    st.write("Welcome to Aceify! Upload your syllabus PDFs and ask questions.")
 
     bot_thread = threading.Thread(target=start_telegram_bot)
     bot_thread.start()
+
+    st.title("Aceify")
+    st.write("Welcome to Aceify! Upload your syllabus PDFs and ask questions.")
+
+    uploaded_file = st.file_uploader("Upload your Documents (PDF, Word, PowerPoint, CSV, or spreadsheet)", type=["pdf", "docx", "pptx", "csv", "xls", "xlsx", "png", "jpg", "jpeg"])
+    ocr = st.checkbox("Enable OCR for PDF files")
+
+    if st.button("Clear Conversation"):
+        st.session_state.messages.clear()
+    
+    if uploaded_file is not None:
+        
+        file_bytes = uploaded_file.read()
+        file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+
+        if file_extension in [".png", ".jpg", ".jpeg"]:
+            with st.expander("Display Image"):
+                st.image(uploaded_file)
+
+        st.write(f"Processing your {uploaded_file.name} file...")
+        file_text = extract_text_from_file(file_bytes, file_extension, ocr)
+        text_chunks = split_text_into_chunks(file_text)
+        create_vector_store(text_chunks)
+        st.write(f"{uploaded_file.name} file processed successfully!")
+
+    if st.session_state.vector_store is not None:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.write(message["content"])
+
+        if prompt := st.chat_input():
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            with st.chat_message("user"):
+                st.write(prompt)
+
+            with st.chat_message("assistant"):
+                with st.spinner("Thinking..."):
+                    response = get_response(prompt)
+                    full_response = ''.join(response['output_text'])
+                    st.write(full_response)
+                    message = {"role": "assistant", "content": full_response}
+                    st.session_state.messages.append(message)
 
 if __name__ == '__main__':
     main()
