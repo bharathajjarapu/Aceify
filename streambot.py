@@ -194,14 +194,14 @@ async def run_telegram_bot():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
     await application.run_polling()
 
-async def run_telegram_bot():
+def run_telegram_bot():
     application = ApplicationBuilder().token(os.environ['TELEGRAM_BOT_TOKEN']).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("clear", clear))
     application.add_handler(MessageHandler(filters.Document.ALL, process_file))
     application.add_handler(MessageHandler(filters.PHOTO, process_file))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
-    await application.run_polling()
+    application.run_polling()
 
 def main():
     st.title("Aceify")
@@ -245,7 +245,8 @@ def main():
                     message = {"role": "assistant", "content": full_response}
                     st.session_state.messages.append(message)
 
-    asyncio.run(run_telegram_bot())
+    telegram_process = multiprocessing.Process(target=run_telegram_bot)
+    telegram_process.start()
 
 if __name__ == '__main__':
     main()
