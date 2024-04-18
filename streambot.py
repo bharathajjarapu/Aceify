@@ -27,6 +27,9 @@ os.getenv("GOOGLE_API_KEY")
 gen_ai.configure(api_key=os.environ['GOOGLE_API_KEY'])
 st.set_page_config(page_title="Aceify", page_icon=":book:")
 
+ADMIN = 5882873021
+USER_IDS = 1111111111,0000000000
+
 if "vector_store" not in st.session_state:
     st.session_state.vector_store = None
 if "messages" not in st.session_state:
@@ -82,6 +85,11 @@ def create_vector_store(user_id, chunks):
     vector_store.save_local(f"faiss_index_{user_id}")
     user_vector_stores[user_id] = vector_store
 
+def create_vectors(chunks):
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
+    vector_store = FAISS.from_texts(chunks, embedding=embeddings)
+    st.session_state.vector_store = vector_store
+
 def setup_conversational_chain():
     prompt_template = """
     You are an AI RAG ChatBot, you help in extracting insights and information from the given context for the question, you must follow the given rules
@@ -120,11 +128,17 @@ def get_response(user_question):
     return response
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    user = update.effective_user
-    await update.message.reply_markdown_v2(
-        f"Hi {user.mention_markdown_v2()}\!",
-        f"Welcome to Aceify! I'm your friendly study assistant. Send me your syllabus PDFs, and I'll process them. Then, you can ask me questions about the content or anything else you'd like to discuss. Let's make learning fun!",
-    )
+    user_id = update.effective_user.id
+    if int(user_id) == ADMIN:
+        await update.message.reply_markdown_v2(
+            f"Hi {update.effective_user.mention_markdown_v2()}!\nWelcome Back Sir"
+        )
+    elif user_id in USER_IDS:
+        await update.message.reply_markdown_v2(
+            f"Hi {update.effective_user.mention_markdown_v2()}!\nHi This is Aceify."
+        )
+    else:
+        await update.message.reply_text("Sorry, you don't have access to this bot.")
 
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     import os
@@ -165,9 +179,9 @@ async def askque(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_question = update.message.text
 
     if user_id not in user_vector_stores:
-        await update.message.reply_text("Please upload your syllabus PDFs first ?!")
+        await update.message.reply_text("Please upload your Files ?!")
         return
-        
+
     response = get_user_response(user_id, user_question)
     full_response = ''.join(response['output_text'])
     await update.message.reply_text(full_response)
@@ -209,7 +223,7 @@ def main():
         st.write(f"Processing your {uploaded_file.name} file...")
         file_text = extract_text_from_file(file_bytes, file_extension, ocr)
         text_chunks = split_text_into_chunks(file_text)
-        create_vector_store(text_chunks)
+        create_vectors(text_chunks)
         st.write(f"{uploaded_file.name} file processed successfully!")
 
     if st.session_state.vector_store is not None:
