@@ -123,7 +123,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     await update.message.reply_markdown_v2(
         f"Hi {user.mention_markdown_v2()}\!",
-        f"Welcome to Aceify! I'm your friendly study assistant. Send me your Files, and I'll process them. Then, you can ask me questions about the content or anything else you'd like to discuss. Let's make learning fun!",
+        f"Welcome to Aceify! I'm your friendly study assistant. Send me your syllabus PDFs, and I'll process them. Then, you can ask me questions about the content or anything else you'd like to discuss. Let's make learning fun!",
     )
 
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -140,7 +140,15 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def process_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
-    file = await update.message.document.get_file()
+
+    if update.message.document:
+        file = await update.message.document.get_file()
+    elif update.message.photo:
+        file = await update.message.photo[-1].get_file()
+    else:
+        await update.message.reply_text("Please upload a document or photo.")
+        return
+
     file_bytes = await file.download_as_bytearray()
     file_extension = os.path.splitext(file.file_path)[1].lower()
 
@@ -150,16 +158,16 @@ async def process_file(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     text_chunks = split_text_into_chunks(file_text)
     create_vector_store(user_id, text_chunks)
 
-    await update.message.reply_text(f"File processed successfully .")
+    await update.message.reply_text(f"File processed successfully.")
 
 async def askque(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_id = update.effective_user.id
     user_question = update.message.text
 
     if user_id not in user_vector_stores:
-        await update.message.reply_text("Please upload your Files ?!")
+        await update.message.reply_text("Please upload your syllabus PDFs first ?!")
         return
-
+        
     response = get_user_response(user_id, user_question)
     full_response = ''.join(response['output_text'])
     await update.message.reply_text(full_response)
@@ -171,6 +179,7 @@ def start_telegram_bot():
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("clear", clear))
     application.add_handler(MessageHandler(filters.Document.ALL, process_file))
+    application.add_handler(MessageHandler(filters.PHOTO, process_file))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
     loop.run_until_complete(application.run_polling())
 
