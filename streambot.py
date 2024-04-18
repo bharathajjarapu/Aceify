@@ -194,6 +194,15 @@ async def run_telegram_bot():
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
     await application.run_polling()
 
+async def run_telegram_bot():
+    application = ApplicationBuilder().token(os.environ['TELEGRAM_BOT_TOKEN']).build()
+    application.add_handler(CommandHandler("start", start))
+    application.add_handler(CommandHandler("clear", clear))
+    application.add_handler(MessageHandler(filters.Document.ALL, process_file))
+    application.add_handler(MessageHandler(filters.PHOTO, process_file))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
+    await application.run_polling()
+
 def main():
     st.title("Aceify")
     st.write("Welcome to Aceify! Upload your syllabus PDFs and ask questions.")
