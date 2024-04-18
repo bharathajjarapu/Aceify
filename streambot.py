@@ -184,18 +184,17 @@ async def askque(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     response = get_user_response(user_id, user_question)
     full_response = ''.join(response['output_text'])
     await update.message.reply_text(full_response)
-
-def main():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-
+    
+async def run_telegram_bot():
     application = ApplicationBuilder().token(os.environ['TELEGRAM_BOT_TOKEN']).build()
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("clear", clear))
     application.add_handler(MessageHandler(filters.Document.ALL, process_file))
     application.add_handler(MessageHandler(filters.PHOTO, process_file))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, askque))
+    await application.run_polling()
 
+def main():
     st.title("Aceify")
     st.write("Welcome to Aceify! Upload your syllabus PDFs and ask questions.")
 
@@ -237,11 +236,7 @@ def main():
                     message = {"role": "assistant", "content": full_response}
                     st.session_state.messages.append(message)
 
-    async def run_telegram_bot():
-        await application.run_polling()
-
-    loop.create_task(run_telegram_bot())
-    loop.run_forever()
+    asyncio.run(run_telegram_bot())
 
 if __name__ == '__main__':
     main()
