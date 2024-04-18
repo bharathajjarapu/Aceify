@@ -123,7 +123,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user = update.effective_user
     await update.message.reply_markdown_v2(
         f"Hi {user.mention_markdown_v2()}\!",
-        f"Welcome to Aceify! I'm your friendly study assistant. Send me your syllabus PDFs, and I'll process them. Then, you can ask me questions about the content or anything else you'd like to discuss. Let's make learning fun!",
+        f"Welcome to Aceify! I'm your friendly study assistant. Send me your Files, and I'll process them. Then, you can ask me questions about the content or anything else you'd like to discuss. Let's make learning fun!",
     )
 
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -157,7 +157,7 @@ async def askque(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     user_question = update.message.text
 
     if user_id not in user_vector_stores:
-        await update.message.reply_text("Please upload your syllabus PDFs first ?!")
+        await update.message.reply_text("Please upload your Files ?!")
         return
 
     response = get_user_response(user_id, user_question)
