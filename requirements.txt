@@ -13,3 +13,4 @@ langchain_google_genai
 openpyxl
 Pillow
 pytesseract
+langchain_community
